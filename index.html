@@ -1,0 +1,131 @@
+<html>
+     <head>
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />   
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    
+     <title>Us Covid Stats</title>
+     </head>
+     <body>
+        <div class="container">
+            <div class="row">
+                <h1 style="text-align: center;"> US Covid Stats</h1>	
+              
+            </div>
+          </div>
+     <div class="container">
+        <div class="row">
+          <div class="col">
+            <div id="Deaths" ></div>
+
+          </div>
+          <div class="col">
+            <div id="Ventilator" ></div>
+
+          </div>
+          
+        </div>
+      </div>
+     <div class="container">
+        <div class="row">
+          <div class="col">
+            <div id="Hospitalized" ></div>
+
+          </div>
+          <div class="col">
+            <div id="Icu" ></div>
+
+          </div>
+         
+        </div>
+      </div>
+     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+     <script>window.jQuery || document.write('<script src="js/jquery-1.8.3.min.js"><\/script>')</script>
+     <script src="http://code.highcharts.com/highcharts.js"></script>
+     <script src="http://code.highcharts.com/highcharts-more.js"></script>
+     <script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+     <script>
+     //My highchart script
+     function prepareData(stats) {
+         var death = [];
+         var hospitalizedCurrently = [];
+         var inIcuCurrently = [];
+         var onVentilatorCurrently = [];
+         var dates = [];
+         stats = stats.reverse();
+         stats.forEach(stat => {
+             dates.push(new Date(stat.dateChecked).getTime());
+             hospitalizedCurrently.push(stat.hospitalizedCurrently);
+             inIcuCurrently.push(stat.inIcuCurrently);
+             onVentilatorCurrently.push(stat.onVentilatorCurrently);
+             death.push(stat.death);
+         });
+
+         startChart('Deaths', dates, [{name: 'Deaths',data: death}]);
+         startChart('Hospitalized', dates, [{name: 'Hospitalized',data: hospitalizedCurrently}]);
+         startChart('Ventilator', dates, [{name: 'Ventilator',data: onVentilatorCurrently}]) 
+
+         startChart('Icu', dates, [{name: 'Icu',data: inIcuCurrently}]); 
+     }
+
+     function startChart(name, categories, data) {
+        new Highcharts.Chart({
+                    chart: {
+                        renderTo: name,
+                        type: 'line',
+                        
+                    },
+                    title: {
+                        text: name,
+                        x: -20 //center
+                    },
+                    subtitle: {
+                        text: '',
+                        x: -20
+                    },
+                    xAxis: {
+                        categories: categories,
+                        type: "datetime",
+                        labels: {
+                            format: '{value:%Y-%b-%e}'  },
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Count'
+                        },
+                        plotLines: [{
+                            value: 0,
+                            width: 1,
+                            color: '#808080'
+                        }]
+                    },
+                    tooltip: {
+                        formatter: function() {
+                                return '<b>'+ this.series.name +'</b><br/>'+
+                                this.x +': '+ this.y;
+                        }
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'top',
+                        x: -10,
+                        y: 100,
+                        borderWidth: 0
+                    },
+                    series: data
+                });
+     }
+     $(function () {
+        $(document).ready(function() {
+             $.getJSON("/recentstats", function(json) {
+                prepareData(json.result);
+                
+          });
+
+        });
+
+     });
+
+     </script>
+ </body>
